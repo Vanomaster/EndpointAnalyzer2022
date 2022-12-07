@@ -1,0 +1,5 @@
+﻿{
+  "ConnectionStrings": {
+    "Main": "Data Source=.\\; Initial Catalog=EndpointAnalyzer2022; Integrated Security=SSPI; Encrypt=no"
+  }
+}
