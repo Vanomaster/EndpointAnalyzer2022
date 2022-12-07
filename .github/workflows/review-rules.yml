@@ -1,0 +1,14 @@
+name: Review rules
+
+on:
+  pull_request:
+    types: [opened, ready_for_review]
+
+jobs:
+  add-reviews:
+    name: "Auto set reviewers and assignees"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: kentaro-m/auto-assign-action@v1.2.4
+        with:
+          configuration-path: ".github/review-rules-config.yml"
