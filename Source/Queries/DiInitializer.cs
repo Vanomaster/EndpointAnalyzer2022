@@ -17,7 +17,7 @@ public static class DiInitializer
     public static IServiceCollection AddQueries(this IServiceCollection services)
     {
         services.AddScoped<TrustedHardwareQuery>();
-        services.AddScoped<RegistryParameterValueQuery>();
+        services.AddScoped<RegistryParameterQueryByGpParameterName>();
 
         return services;
     }
