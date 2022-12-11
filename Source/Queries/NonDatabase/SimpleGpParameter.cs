@@ -5,7 +5,7 @@ public class SimpleGpParameter
     public string RegistryParameterName { get; set; }
 
     /// <summary>
-    /// Current value
+    /// Current value.
     /// </summary>
     public string? Value { get; set; }
 

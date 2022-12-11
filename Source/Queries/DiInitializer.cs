@@ -17,7 +17,14 @@ public static class DiInitializer
     public static IServiceCollection AddQueries(this IServiceCollection services)
     {
         services.AddScoped<TrustedHardwareQuery>();
+        services.AddScoped<GpParametersValuesRecommendationsQuery>();
+        services.AddScoped<GpParametersRationalesRecommendationsQuery>();
+        services.AddScoped<GpRegistryParameterQueryByGpParameterName>();
+
         services.AddScoped<RegistryParameterQueryByGpParameterName>();
+        services.AddScoped<RegistryParameterQuery>();
+        services.AddScoped<ParametersQueryFromSecedit>();
+
         services.AddScoped<QueryFromCsvFile<FullGpParametersScvModel>>();
         services.AddScoped<QueryFromCsvFile<TrustedSoftwareScvModel>>();
         services.AddScoped<QueryFromCsvFile<TrustedHardwareScvModel>>();

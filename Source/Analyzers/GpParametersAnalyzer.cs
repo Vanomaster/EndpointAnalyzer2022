@@ -13,7 +13,6 @@ public class GpParametersAnalyzer : IAnalyzer<List<string>>
     /// Initializes a new instance of the <see cref="HardwareAnalyzer"/> class.
     /// </summary>
     /// <param name="registryParameterQueryByGpParameterName">Registry parameter value query.</param>
-    /// <param name="trustedHardwareQuery">Trusted hardware query.</param>
     public GpParametersAnalyzer(
         RegistryParameterQueryByGpParameterName registryParameterQueryByGpParameterName,
         GpParametersValuesRecommendationsQuery gpParametersValuesRecommendationsQuery,
@@ -84,8 +83,8 @@ public class GpParametersAnalyzer : IAnalyzer<List<string>>
     }
 
     private static List<SimpleGpParameter> GetDifferences(
-        IEnumerable<SimpleGpParameter> validatableCollection,
-        ICollection<SimpleGpParameter> validCollection)
+        List<SimpleGpParameter> validatableCollection,
+        List<SimpleGpParameter> validCollection)
     {
         var invalidParameters = new List<SimpleGpParameter>();
         foreach (var validatableParameter in validatableCollection)
@@ -99,7 +98,7 @@ public class GpParametersAnalyzer : IAnalyzer<List<string>>
                 continue; // Если в БД нет считанных параметров
             }
 
-            var isValidParameter = validParameter.Direction switch
+            bool isValidParameter = validParameter.Direction switch
             {
                 null => validatableParameter.Value == validParameter.Value,
                 false => int.Parse(validatableParameter.Value) <= int.Parse(validParameter.Value),
@@ -119,56 +118,53 @@ public class GpParametersAnalyzer : IAnalyzer<List<string>>
         List<SimpleGpParameter> invalidParameters,
         List<SimpleGpParameter> nonexistentParameters)
     {
-        var badParameters = invalidParameters;
-        badParameters.AddRange(nonexistentParameters);
-        var invalidParametersNames = badParameters
+        invalidParameters.AddRange(nonexistentParameters);
+        var invalidParametersNames = invalidParameters
             .Select(parameter => parameter.RegistryParameterName)
             .ToList();
 
         var gpParametersRationalesRecommendationsQueryResult =
             GpParametersRationalesRecommendationsQuery.Execute(invalidParametersNames);
-
         if (!gpParametersRationalesRecommendationsQueryResult.IsSuccessful)
         {
-            //return new AnalyzeResult<List<string>>(gpParametersRationalesRecommendationsQueryResult.ErrorMessage);
+            return new List<string> { gpParametersRationalesRecommendationsQueryResult.ErrorMessage };
         }
 
         var rationalesRecommendations = gpParametersRationalesRecommendationsQueryResult.Data;
+        var nonexistentParametersNames = nonexistentParameters
+            .Select(nonexistentPar => nonexistentPar.RegistryParameterName)
+            .ToList();
         var recommendations = new List<string>();
 
-
-        var nonexistentParametersNames = nonexistentParameters
-            .Select(nonexistentPar => nonexistentPar.RegistryParameterName);
-
-        foreach (var badParameter in badParameters)
+        foreach (var invalidParameter in invalidParameters)
         {
             var parameterRationale = rationalesRecommendations
-                .FirstOrDefault(rec => rec.RegistryParemeterName == badParameter.RegistryParameterName);
+                .FirstOrDefault(rec => rec.RegistryParemeterName == invalidParameter.RegistryParameterName);
 
-            string rec = $@"Имя параметра: {parameterRationale.Name}\n";
+            string recommendation = $@"Имя параметра: {parameterRationale?.Name}" + "\n";
 
-            if (nonexistentParametersNames.Contains(badParameter.RegistryParameterName))
+            if (nonexistentParametersNames.Contains(invalidParameter.RegistryParameterName))
             {
-                rec += @"Текущее значение параметра: Не установлено\n";
+                recommendation += @"Текущее значение параметра: Не установлено" + "\n";
             }
             else
             {
-                rec += $@"Текущее значение параметра: {badParameter.Value}\n";
+                recommendation += $@"Текущее значение параметра: {invalidParameter.Value}" + "\n";
             }
 
-            rec += parameterRationale.Direction switch
+            recommendation += parameterRationale.Direction switch
             {
-                null => $@"Рекомендуемое значение параметра: {parameterRationale.Value}\n",
-                false => $@"Рекомендуемое значение параметра: не более {parameterRationale.Value}\n",
-                true => $@"Рекомендуемое значение параметра: не менее {parameterRationale.Value}\n",
+                null => $@"Рекомендуемое значение параметра: {parameterRationale.Value}" + "\n",
+                false => $@"Рекомендуемое значение параметра: не более {parameterRationale.Value}" + "\n",
+                true => $@"Рекомендуемое значение параметра: не менее {parameterRationale.Value}" + "\n",
             };
 
-            rec += $@"Описание параметра: {parameterRationale.Description}\n"
-                   + $@"Обоснование параметра: {parameterRationale.Rationale}\n"
-                   + $@"Влияние параметра на систему: {parameterRationale.Impact}\n"
-                   + $@"_____________________________________________________________\n\n";
+            recommendation += $@"Описание параметра: {parameterRationale.Description}" + "\n"
+                   + $@"Обоснование параметра: {parameterRationale.Rationale}" + "\n"
+                   + $@"Влияние параметра на систему: {parameterRationale.Impact}" + "\n"
+                   + $@"_____________________________________________________________________________________" + "\n\n";
 
-            recommendations.Add(rec);
+            recommendations.Add(recommendation);
         }
 
         return recommendations;
