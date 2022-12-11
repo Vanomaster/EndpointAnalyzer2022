@@ -1,0 +1,11 @@
+﻿Name|Version
+ProtonVPN|2.2.0
+OpenVPN Connect|3.3.6
+PDF24 Creator 10.0.11|10.0.11
+VMware Player|17.0.0
+Oracle VM VirtualBox 7.0.2|7.0.2
+Git|2.38.1
+JetBrains Rider 2022.2.4|222.4459.9
+7-Zip 22.00 (x64)|22.00
+CCleaner|6.04
+Genshin Impact|2.19.0.0

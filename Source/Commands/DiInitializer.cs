@@ -16,6 +16,9 @@ public static class DiInitializer
     {
         services.AddScoped<AddOrUpdateEntityCommand>();
         services.AddScoped<DeleteEntityCommand>();
+        services.AddScoped<AddOrUpdateGpParameterFromCsvFileCommand>();
+        services.AddScoped<AddOrUpdateTrustedSoftwareFromCsvFileCommand>();
+        services.AddScoped<AddOrUpdateTrustedHardwareFromCsvFileCommand>();
 
         return services;
     }

@@ -23,6 +23,6 @@ public class DeleteEntityCommand : CommandBase<IEnumerable<IEntity>>
         Context.RemoveRange(entities);
         Context.SaveChanges();
 
-        return new CommandResult();
+        return GetSuccessfulResult();
     }
 }
