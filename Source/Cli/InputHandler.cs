@@ -1,6 +1,8 @@
 ﻿using Core;
 using Microsoft.Extensions.DependencyInjection;
 
+using Analyzers;
+
 namespace Cli;
 
 /// <summary>
