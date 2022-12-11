@@ -6,14 +6,14 @@ using Queries.Base;
 namespace Queries.Database;
 
 /// <inheritdoc />
-public class GpParameterRegistryParametersQueryByGpParameterName
+public class GpRegistryParameterQueryByGpParameterName
     : QueryBase<List<string>?, List<GpParameterRegistryParameter>>
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="GpParameterRegistryParametersQueryByGpParameterName"/> class.
+    /// Initializes a new instance of the <see cref="GpRegistryParameterQueryByGpParameterName"/> class.
     /// </summary>
     /// <param name="contextFactory">Context factory.</param>
-    public GpParameterRegistryParametersQueryByGpParameterName(IDbContextFactory<Context> contextFactory)
+    public GpRegistryParameterQueryByGpParameterName(IDbContextFactory<Context> contextFactory)
         : base(contextFactory)
     {
     }

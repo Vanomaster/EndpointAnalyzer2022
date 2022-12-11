@@ -3,7 +3,7 @@
 /// <summary>
 /// Model for RegistryParameterValueQuery.
 /// </summary>
-public class RegistryParameterValueQueryModel
+public class RegistryParameterQueryModel
 {
     /// <summary>
     /// The full registry path of the key, beginning with a valid registry root, such as "HKEY_CURRENT_USER".
@@ -13,5 +13,5 @@ public class RegistryParameterValueQueryModel
     /// <summary>
     /// The name of the parameter.
     /// </summary>
-    public string? ValueName { get; set; }
+    public string ParameterName { get; set; }
 }

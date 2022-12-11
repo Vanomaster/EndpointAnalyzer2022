@@ -7,29 +7,29 @@ namespace Analyzers;
 /// <summary>
 /// Hardware analyzer.
 /// </summary>
-public class HardwareAnalyzer : IAnalyzer<List<RegistryParameterValueQueryModel>, List<string>>
+public class HardwareAnalyzer : IAnalyzer<List<RegistryParameterQueryModel>, List<string>>
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="HardwareAnalyzer"/> class.
     /// </summary>
-    /// <param name="registryParameterValueQuery">Registry parameter value query.</param>
+    /// <param name="registryExistentParameterQuery">Registry parameter value query.</param>
     /// <param name="trustedHardwareQuery">Trusted hardware query.</param>
     public HardwareAnalyzer(
-        RegistryParameterValueQuery registryParameterValueQuery,
+        RegistryExistentParameterQuery registryExistentParameterQuery,
         TrustedHardwareQuery trustedHardwareQuery)
     {
-        RegistryParameterValueQuery = registryParameterValueQuery;
+        RegistryExistentParameterQuery = registryExistentParameterQuery;
         TrustedHardwareQuery = trustedHardwareQuery;
     }
 
-    private RegistryParameterValueQuery RegistryParameterValueQuery { get; }
+    private RegistryExistentParameterQuery RegistryExistentParameterQuery { get; }
 
     private TrustedHardwareQuery TrustedHardwareQuery { get; }
 
     /// <inheritdoc/>
-    public AnalyzeResult<List<string>> Analyze(List<RegistryParameterValueQueryModel> model)
+    public AnalyzeResult<List<string>> Analyze(List<RegistryParameterQueryModel> model)
     {
-        var registryParameterValueQueryResult = RegistryParameterValueQuery.Execute(model);
+        var registryParameterValueQueryResult = RegistryExistentParameterQuery.Execute(model);
         if (!registryParameterValueQueryResult.IsSuccessful)
         {
             return new AnalyzeResult<List<string>>(registryParameterValueQueryResult.ErrorMessage);
@@ -41,7 +41,8 @@ public class HardwareAnalyzer : IAnalyzer<List<RegistryParameterValueQueryModel>
             return new AnalyzeResult<List<string>>(trustedHardwareQueryResult.ErrorMessage);
         }
 
-        var hardwareIds = registryParameterValueQueryResult.Data;
+        var hardwareIds = registryParameterValueQueryResult.Data
+            .Select(parameter => parameter.Value);
         var trustedHardwareIds = trustedHardwareQueryResult.Data
             .Select(hardware => hardware.HardwareId)
             .ToList();
