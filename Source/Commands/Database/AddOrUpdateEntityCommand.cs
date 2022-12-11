@@ -23,6 +23,6 @@ public class AddOrUpdateEntityCommand : CommandBase<IEnumerable<IEntity>>
         Context.UpdateRange(entities);
         Context.SaveChanges();
 
-        return new CommandResult();
+        return GetSuccessfulResult();
     }
 }

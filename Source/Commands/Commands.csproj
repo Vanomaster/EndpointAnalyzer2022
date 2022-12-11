@@ -13,6 +13,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\Dal\Dal.csproj" />
+      <ProjectReference Include="..\Queries\Queries.csproj" />
     </ItemGroup>
 
     <Import Project="$(MSBuildProjectDirectory)..\..\..\Common.props" Label="Правила и nuget-пакет StyleCop, GlobalAssemblyInfo" />

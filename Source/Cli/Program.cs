@@ -40,6 +40,7 @@ internal static class Program
         var services = new ServiceCollection();
         services.AddCli();
         services.AddDal();
+        services.AddCore();
         services.AddQueries();
         services.AddCommands();
         services.AddAnalyzers();

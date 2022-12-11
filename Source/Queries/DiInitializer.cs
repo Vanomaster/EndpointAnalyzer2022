@@ -18,6 +18,9 @@ public static class DiInitializer
     {
         services.AddScoped<TrustedHardwareQuery>();
         services.AddScoped<RegistryParameterQueryByGpParameterName>();
+        services.AddScoped<QueryFromCsvFile<FullGpParametersScvModel>>();
+        services.AddScoped<QueryFromCsvFile<TrustedSoftwareScvModel>>();
+        services.AddScoped<QueryFromCsvFile<TrustedHardwareScvModel>>();
 
         return services;
     }
