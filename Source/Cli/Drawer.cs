@@ -1,13 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace Cli;
+﻿namespace Cli;
 
 public class Drawer
 {
-    public static int index = 0;
+    private static int index = 0;
 
-    public int DrawMenu(List<string> items)
+    public static int DrawMenu(List<string> items)
     {
         Console.CursorVisible = false;
         for (int i = 0; i < items.Count; i++)
@@ -23,38 +20,12 @@ public class Drawer
             {
                 Console.WriteLine(items[i]);
             }
+
             Console.ResetColor();
         }
 
-        ConsoleKeyInfo ckey = Console.ReadKey();
-        // ckey.Key switch
-        // {
-        //     ConsoleKey.DownArrow => _ =>
-        //     {
-        //         if (index == items.Count - 1)
-        //         {
-        //             index = 0;
-        //         }
-        //         else
-        //         {
-        //             index++;
-        //         }
-        //     },
-        //     ConsoleKey.UpArrow => _ =>
-        //     {
-        //         if (index <= 0)
-        //         {
-        //             index = items.Count - 1;
-        //         }
-        //         else
-        //         {
-        //             index--;
-        //         }
-        //     },
-        //     ConsoleKey.Enter => index,
-        //     _ => -1,
-        // };
-        // return -2;
+        var ckey = Console.ReadKey();
+
         switch (ckey.Key)
         {
             case ConsoleKey.DownArrow:
@@ -63,27 +34,39 @@ public class Drawer
                 {
                     index = 0;
                 }
-                else { index++; }
-            }
+                else
+                {
+                    index++;
+                }
+
                 break;
+            }
+
             case ConsoleKey.UpArrow:
             {
                 if (index <= 0)
                 {
                     index = items.Count - 1;
                 }
-                else { index--; }
-            }
+                else
+                {
+                    index--;
+                }
+
                 break;
+            }
+
             case ConsoleKey.Enter:
             {
                 return index;
             }
+
             default:
             {
                 return -1;
             }
         }
+
         return -2;
     }
 }

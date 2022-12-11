@@ -24,7 +24,7 @@ public class InputHandler
         "Выйти",
     };
 
-    private static readonly List<string> MenuItemsSoftware = new()
+    private static readonly List<string> SoftwareMenuItems = new()
     {
         "Анализ 1",
         "анализ 2",
@@ -61,43 +61,46 @@ public class InputHandler
 
     public void DrawMainMenu()
     {
+        Console.Clear();
         int selectedMenuItem = Drawer.DrawMenu(MenuItems);
         switch (selectedMenuItem)
         {
             case -2:
             {
                 Console.Clear();
-            }
                 break;
+            }
+
             case -1:
             {
-                Console.Clear();
-                Console.WriteLine("Выберите один вариант с помощью клавиш вверх/вниз и введите для подтверждения");
-                Thread.Sleep(3000);
-                Console.Clear();
-                Drawer.DrawMenu(MenuItems);
-            }
+                DisplayInputError();
                 break;
+            }
+
             case 0: //GPPARAM
             {
-                DispayRecommendations(Analyzer, "");
-            }
+                //DisplayRecommendations(Analyzer, "");
                 break;
+            }
+
             case 1: // HARDWARE
             {
-                DispayRecommendations(Analyzer, "");
-            }
+                //DisplayRecommendations(Analyzer, "");
                 break;
+            }
+
             case 2: // SOFTWARE
             {
+                Console.Clear();
                 DrawSoftwareMenu();
-            }
                 break;
+            }
+
             default: // выход
             {
                 Environment.Exit(0);
-            }
                 break;
+            }
         }
     }
 
@@ -105,44 +108,43 @@ public class InputHandler
     {
         while (true)
         {
-            int selectedMenuItem = Drawer.DrawMenu(MenuItemsSoftware);
+            Console.Clear();
+            int selectedMenuItem = Drawer.DrawMenu(SoftwareMenuItems);
             switch (selectedMenuItem)
             {
                 case -2:
                 {
                     Console.Clear();
-                }
                     break;
+                }
+
                 case -1:
                 {
-                    Console.Clear();
-                    Console.WriteLine("Выберите один вариант с помощью клавиш вверх/вниз и введите для подтверждения");
-                    Thread.Sleep(3000);
-                    Console.Clear();
-                    Drawer.DrawMenu(MenuItemsSoftware);
-                }
+                    DisplayInputError();
                     break;
+                }
+
                 case 0: // SOFTWAREUPD
                 {
-                    DispayRecommendations(Analyzer, "");
-                }
+                   // DisplayRecommendations(Analyzer, "");
                     break;
+                }
+
                 case 1: // SOFTWARE
                 {
-                    DispayRecommendations(Analyzer, "");
-                }
+                    // DisplayRecommendations(Analyzer, "");
                     break;
+                }
+
                 default: // выход
                 {
-                    Console.Clear();
-                    Drawer.DrawMenu(MenuItems);
+                    return;
                 }
-                    break;
             }
         }
     }
 
-    private void DispayRecommendations(IAnalyzer<List<string>> analyzer, string analayzerName)
+    private void DisplayRecommendations(IAnalyzer<List<string>> analyzer, string analayzerName)
     {
         Console.Clear();
         Console.WriteLine($"{analayzerName} вывел следующие рекоммендации:");
@@ -152,5 +154,14 @@ public class InputHandler
         Thread.Sleep(3000);
         Console.ReadKey();
         Console.Clear();
+    }
+
+    private void DisplayInputError()
+    {
+        Console.Clear();
+        Console.WriteLine("Выберите один вариант с помощью клавиш вверх/вниз и введите для подтверждения");
+        Thread.Sleep(3000);
+        Console.Clear();
+
     }
 }
