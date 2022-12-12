@@ -1,3 +1,7 @@
+using Analyzers.Base;
+using Core;
+using Microsoft.Extensions.DependencyInjection;
+
 namespace Cli;
 
 /// <summary>
@@ -5,17 +9,6 @@ namespace Cli;
 /// </summary>
 public class InputHandler
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="InputHandler"/> class.
-    /// </summary>
-    /// <param name="hardwareAnalyzer">Hardware analyzer.</param>
-    public InputHandler(HardwareAnalyzer hardwareAnalyzer)
-    {
-        HardwareAnalyzer = hardwareAnalyzer;
-    }
-
-    private HardwareAnalyzer HardwareAnalyzer { get; }
-
     private static readonly List<string> MenuItems = new()
     {
         "Проверка параметров учётных записей",
@@ -31,7 +24,6 @@ public class InputHandler
         "Назад",
     };
 
-    private Drawer Drawer { get; set; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="InputHandler"/> class.
@@ -43,6 +35,8 @@ public class InputHandler
     }
 
     private IServiceProvider ServiceProvider { get; set; }
+
+    private Drawer Drawer { get; set; }
 
     /// <summary>
     /// Handle input.
@@ -58,8 +52,7 @@ public class InputHandler
         }
     }
 
-
-    public void DrawMainMenu()
+    private void DrawMainMenu()
     {
         Console.Clear();
         int selectedMenuItem = Drawer.DrawMenu(MenuItems);
@@ -162,6 +155,5 @@ public class InputHandler
         Console.WriteLine("Выберите один вариант с помощью клавиш вверх/вниз и введите для подтверждения");
         Thread.Sleep(3000);
         Console.Clear();
-
     }
 }
