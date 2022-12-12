@@ -2,7 +2,6 @@
 using Microsoft.Win32;
 using Queries.Database;
 using Queries.NonDatabase;
-using WGetNET;
 
 namespace Analyzers;
 
@@ -14,10 +13,7 @@ public class SoftwareUpdateAnalyzer : IAnalyzer<List<string>>
     /// <summary>
     /// Initializes a new instance of the <see cref="SoftwareUpdateAnalyzer"/> class.
     /// </summary>
-    /// <param name="registryParameterValueQuery">Registry parameter value query.</param>
-    /// <param name="trustedSoftwareQuery">Trusted Software query.</param>
-    public SoftwareUpdateAnalyzer(
-        TrustedSoftwareQuery trustedSoftwareQuery, UpgradableSoftwareQuery upgradableSoftware)
+    public SoftwareUpdateAnalyzer(UpgradableSoftwareQuery upgradableSoftware)
     {
         UpgradableSoftwareQuery = upgradableSoftware;
     }

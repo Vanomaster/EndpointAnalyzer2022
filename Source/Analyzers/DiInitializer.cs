@@ -15,6 +15,8 @@ public static class DiInitializer
     public static IServiceCollection AddAnalyzers(this IServiceCollection services)
     {
         services.AddScoped<HardwareAnalyzer>();
+        services.AddScoped<SoftwareTrustAnalyzer>();
+        services.AddScoped<SoftwareUpdateAnalyzer>();
 
         return services;
     }

@@ -18,6 +18,9 @@ public static class DiInitializer
     {
         services.AddScoped<TrustedHardwareQuery>();
         services.AddScoped<RegistryParameterQueryByGpParameterName>();
+        services.AddScoped<InstalledSoftwareQuery>();
+        services.AddScoped<UpgradableSoftwareQuery>();
+        services.AddScoped<TrustedSoftwareQuery>();
 
         return services;
     }

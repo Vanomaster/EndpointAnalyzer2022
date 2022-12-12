@@ -1,15 +1,14 @@
 ﻿using Analyzers.Base;
-using Microsoft.Win32;
+using Microsoft.SqlServer.Server;
 using Queries.Database;
 using Queries.NonDatabase;
-using WGetNET;
 
 namespace Analyzers;
 
 /// <summary>
 /// Software analyzer.
 /// </summary>
-public class SoftwareTrustAnalyzer : IAnalyzer<List<SimpleSoftware>, List<string>>
+public class SoftwareTrustAnalyzer : IAnalyzer<List<string>>
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="SoftwareTrustAnalyzer"/> class.
@@ -29,7 +28,7 @@ public class SoftwareTrustAnalyzer : IAnalyzer<List<SimpleSoftware>, List<string
     private TrustedSoftwareQuery TrustedSoftwareQuery { get; }
 
     /// <inheritdoc/>
-    public AnalyzeResult<List<string>> Analyze(List<SimpleSoftware> model)
+    public AnalyzeResult<List<string>> Analyze()
     {
         var installedSoftwareQueryResult = InstalledSoftwareQuery.Execute();
         if (!installedSoftwareQueryResult.IsSuccessful)
@@ -44,10 +43,10 @@ public class SoftwareTrustAnalyzer : IAnalyzer<List<SimpleSoftware>, List<string
         }
 
         List<SimpleSoftware> trustedSoftwareList = new();
+
         foreach (var trustedSoftware in trustedSoftwareQueryResult.Data)
         {
-            Version softwareVersion = null;
-            softwareVersion = Version.Parse(trustedSoftware.Version);
+            var softwareVersion = Version.Parse(trustedSoftware.Version);
             SimpleSoftware trustedSimpleSoftware = new () { Name = trustedSoftware.Name, Version = softwareVersion };
             trustedSoftwareList.Add(trustedSimpleSoftware);
         }
@@ -73,7 +72,18 @@ public class SoftwareTrustAnalyzer : IAnalyzer<List<SimpleSoftware>, List<string
                 continue;
             }
 
-            var isValidVersion = validatableSoftware.Version.CompareTo(validSoftware) >= 0;
+            if ((validatableSoftware.Version == null && validSoftware.Version != null) ||
+                (validatableSoftware.Version != null && validSoftware.Version == null))
+            {
+                invalidSoftware.Add(validatableSoftware);
+            }
+
+            if (validatableSoftware.Version == null || validSoftware.Version == null)
+            {
+                continue;
+            }
+
+            var isValidVersion = validatableSoftware.Version.CompareTo(validSoftware.Version) >= 0;
             if (!isValidVersion)
             {
                 invalidSoftware.Add(validatableSoftware);
@@ -93,11 +103,25 @@ public class SoftwareTrustAnalyzer : IAnalyzer<List<SimpleSoftware>, List<string
             return recommendations;
         }
 
-        string recommendation = @"Были обнаружены недоверенные приложения."
-                                + "\n" + @"Рекомендуется проверить эти приложения:" + "\n";
-        recommendation += string.Join("\n", untrustedSoftware);
-        recommendations.Add(recommendation);
+        recommendations.Add(@"Были обнаружены недоверенные приложения."
+                            + "\n" + @"Рекомендуется проверить эти приложения:" + "\n");
+        foreach (var software in untrustedSoftware)
+        {
+            recommendations.Add($"{CutSoftwareString(software.Name)} | {CutSoftwareString(software.Version?.ToString())}");
+        }
 
         return recommendations;
+    }
+
+    private static string CutSoftwareString(string? inputString)
+    {
+        if (inputString != null && inputString.Length >= 55)
+        {
+            return $"{inputString.Substring(0, 53) + "..",-55}";
+        }
+        else
+        {
+            return $"{inputString,-55}";
+        }
     }
 }
