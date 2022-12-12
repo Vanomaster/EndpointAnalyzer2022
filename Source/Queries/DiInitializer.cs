@@ -21,6 +21,7 @@ public static class DiInitializer
         services.AddScoped<QueryFromCsvFile<FullGpParametersScvModel>>();
         services.AddScoped<QueryFromCsvFile<TrustedSoftwareScvModel>>();
         services.AddScoped<QueryFromCsvFile<TrustedHardwareScvModel>>();
+        services.AddScoped<RegistryExistentParameterQuery>();
 
         return services;
     }
