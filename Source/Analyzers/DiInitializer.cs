@@ -16,6 +16,8 @@ public static class DiInitializer
     {
         services.AddScoped<GpParametersAnalyzer>();
         services.AddScoped<HardwareAnalyzer>();
+        services.AddScoped<SoftwareTrustAnalyzer>();
+        services.AddScoped<SoftwareUpdateAnalyzer>();
 
         return services;
     }
