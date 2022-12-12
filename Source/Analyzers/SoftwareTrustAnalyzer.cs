@@ -42,7 +42,7 @@ public class SoftwareTrustAnalyzer : IAnalyzer<List<string>>
             return new AnalyzeResult<List<string>>(trustedSoftwareQueryResult.ErrorMessage);
         }
 
-        List<SimpleSoftware> trustedSoftwareList = new();
+        List<SimpleSoftware> trustedSoftwareList = new ();
 
         foreach (var trustedSoftware in trustedSoftwareQueryResult.Data)
         {

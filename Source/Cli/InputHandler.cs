@@ -1,6 +1,5 @@
 using Analyzers;
 using Analyzers.Base;
-using Core;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Cli;
@@ -12,16 +11,16 @@ public class InputHandler
 {
     private static readonly List<string> MenuItems = new()
     {
-        "Проверка параметров учётных записей",
-        "анализ 2",
-        "анализ 3",
+        "Запустить анализ параметров групповых политик",
+        "Запустить анализ подключённых устройств",
+        "Запустить анализ программного обеспечения",
         "Выйти",
     };
 
     private static readonly List<string> SoftwareMenuItems = new()
     {
-        "Анализ 1",
-        "анализ 2",
+        "Запустить анализ обновлений программного обеспечения",
+        "Запустить анализ довереного программного обеспечения",
         "Назад",
     };
 
@@ -44,6 +43,7 @@ public class InputHandler
     /// </summary>
     public void Handle()
     {
+        Console.Title = "Endpoint analyzer 2022";
         while (true)
         {
             DrawMainMenu();
@@ -53,7 +53,7 @@ public class InputHandler
     private void DrawMainMenu()
     {
         Console.Clear();
-        int selectedMenuItem = Drawer.DrawMenu(MenuItems);
+        var selectedMenuItem = Drawer.DrawMenu(MenuItems);
         switch (selectedMenuItem)
         {
             case -2:
@@ -68,27 +68,27 @@ public class InputHandler
                 break;
             }
 
-            case 0: //GPPARAM
+            case 0:
             {
                 var service = ServiceProvider.GetRequiredService<GpParametersAnalyzer>();
-                DisplayRecommendations(service, "Анализатор параметров групповых политик");
+                DisplayRecommendations(service, "анализатора параметров групповых политик");
                 break;
             }
 
-            case 1: // HARDWARE
+            case 1:
             {
                 //DisplayRecommendations(Analyzer, "");
                 break;
             }
 
-            case 2: // SOFTWARE
+            case 2:
             {
                 Console.Clear();
                 DrawSoftwareMenu();
                 break;
             }
 
-            default: // выход
+            default:
             {
                 Environment.Exit(0);
                 break;
@@ -116,19 +116,21 @@ public class InputHandler
                     break;
                 }
 
-                case 0: // SOFTWAREUPD
+                case 0:
                 {
-                    // DisplayRecommendations(Analyzer, "");
+                    var service = ServiceProvider.GetRequiredService<SoftwareUpdateAnalyzer>();
+                    DisplayRecommendations(service, "анализатора обновлений ПО");
                     break;
                 }
 
-                case 1: // SOFTWARE
+                case 1:
                 {
-                    // DisplayRecommendations(Analyzer, "");
+                    var service = ServiceProvider.GetRequiredService<SoftwareTrustAnalyzer>();
+                    DisplayRecommendations(service, "анализатора доверенных ПО");
                     break;
                 }
 
-                default: // выход
+                default:
                 {
                     return;
                 }
@@ -146,15 +148,16 @@ public class InputHandler
             return;
         }
 
-        Console.WriteLine($"{analayzerName} вывел следующие рекоммендации:");
+        Console.WriteLine($"В результате работы {analayzerName} был получен следующий результат:\n");
 
-        foreach (string data in result.Data)
+        foreach (var data in result.Data)
         {
             Console.WriteLine(data);
         }
 
         Console.WriteLine("\n_____________________________________");
         Console.WriteLine("Нажмите любую клавишу для продолжения");
+        Console.SetCursorPosition(0, 0);
         Thread.Sleep(3000);
         Console.ReadKey();
         Console.Clear();
@@ -163,7 +166,7 @@ public class InputHandler
     private void DisplayInputError()
     {
         Console.Clear();
-        Console.WriteLine("Выберите один вариант с помощью клавиш вверх/вниз и введите для подтверждения");
+        Console.WriteLine("Выберите один вариант с помощью клавиш вверх/вниз и нажмите клавишу ввод для подтверждения");
         Thread.Sleep(3000);
         Console.Clear();
     }
