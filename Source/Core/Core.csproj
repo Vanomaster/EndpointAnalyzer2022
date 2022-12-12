@@ -7,13 +7,12 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="CsvHelper" Version="30.0.1" />
-      <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.0" />
       <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="7.0.0" />
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Dal\Dal.csproj" />
+      <ProjectReference Include="..\Commands\Commands.csproj" />
+      <ProjectReference Include="..\Queries\Queries.csproj" />
     </ItemGroup>
 
     <Import Project="$(MSBuildProjectDirectory)..\..\..\Common.props" Label="Правила и nuget-пакет StyleCop, GlobalAssemblyInfo" />

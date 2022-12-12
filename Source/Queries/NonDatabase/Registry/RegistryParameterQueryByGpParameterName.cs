@@ -13,6 +13,8 @@ public class RegistryParameterQueryByGpParameterName : NonDbQueryBase<List<strin
     /// </summary>
     private const string DefaultValue = "_______________";
 
+    private const string NonRegistryKeyName = "Non registry. Account policy";
+
     /// <summary>
     /// Initializes a new instance of the <see cref="RegistryParameterQueryByGpParameterName"/> class.
     /// </summary>
@@ -39,6 +41,8 @@ public class RegistryParameterQueryByGpParameterName : NonDbQueryBase<List<strin
         {
             return GetFailedResult(gpRegistryParameterQueryResult.ErrorMessage);
         }
+
+        gpRegistryParameterQueryResult.Data.RemoveAll(parameter => parameter.KeyName == NonRegistryKeyName);
 
         var registryParameterQueryModels = gpRegistryParameterQueryResult.Data
             .Select(gpRegistryParameter =>

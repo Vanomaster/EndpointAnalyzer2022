@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 using Queries.Database;
 using Queries.NonDatabase;
 
@@ -17,10 +17,21 @@ public static class DiInitializer
     public static IServiceCollection AddQueries(this IServiceCollection services)
     {
         services.AddScoped<TrustedHardwareQuery>();
+        services.AddScoped<TrustedSoftwareQuery>();
+        services.AddScoped<GpParametersValuesRecommendationsQuery>();
+        services.AddScoped<GpParametersRationalesRecommendationsQuery>();
+        services.AddScoped<GpRegistryParameterQueryByGpParameterName>();
+
         services.AddScoped<RegistryParameterQueryByGpParameterName>();
         services.AddScoped<InstalledSoftwareQuery>();
         services.AddScoped<UpgradableSoftwareQuery>();
-        services.AddScoped<TrustedSoftwareQuery>();
+        services.AddScoped<RegistryParameterQuery>();
+        services.AddScoped<RegistryExistentParameterQuery>();
+        services.AddScoped<ParametersQueryFromSecedit>();
+
+        services.AddScoped<QueryFromCsvFile<FullGpParametersScvModel>>();
+        services.AddScoped<QueryFromCsvFile<TrustedSoftwareScvModel>>();
+        services.AddScoped<QueryFromCsvFile<TrustedHardwareScvModel>>();
 
         return services;
     }
