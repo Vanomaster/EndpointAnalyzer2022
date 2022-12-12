@@ -11,7 +11,7 @@ public abstract class NonDbQueryBase<TModel, TResult> : IQuery<TModel, TResult>
     }
 
     /// <inheritdoc/>
-    public QueryResult<TResult> Execute(TModel model)
+    public QueryResult<TResult> Execute(TModel model = default!)
     {
         try
         {

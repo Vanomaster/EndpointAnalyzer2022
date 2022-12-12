@@ -1,3 +1,4 @@
+using Analyzers;
 using Analyzers.Base;
 using Core;
 using Microsoft.Extensions.DependencyInjection;
@@ -34,7 +35,7 @@ public class InputHandler
         ServiceProvider = serviceProvider;
     }
 
-    private IServiceProvider ServiceProvider { get; set; }
+    private IServiceProvider ServiceProvider { get; }
 
     private Drawer Drawer { get; set; }
 
@@ -43,6 +44,19 @@ public class InputHandler
     /// </summary>
     public void Handle()
     {
+        var service = ServiceProvider.GetRequiredService<GpParametersAnalyzer>();
+        var result = service.Analyze();
+        if (!result.IsSuccessful)
+        {
+            Console.WriteLine(result.ErrorMessage);
+            return;
+        }
+
+        foreach (string data in result.Data)
+        {
+            Console.WriteLine(data);
+        }
+
         var dbUpdaterFromScvFiles = ServiceProvider.GetRequiredService<DbUpdaterFromScvFiles>();
         string result = dbUpdaterFromScvFiles.UpdateAll();
         Console.WriteLine(result);
