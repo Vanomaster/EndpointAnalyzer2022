@@ -44,22 +44,6 @@ public class InputHandler
     /// </summary>
     public void Handle()
     {
-        var service = ServiceProvider.GetRequiredService<GpParametersAnalyzer>();
-        var result = service.Analyze();
-        if (!result.IsSuccessful)
-        {
-            Console.WriteLine(result.ErrorMessage);
-            return;
-        }
-
-        foreach (string data in result.Data)
-        {
-            Console.WriteLine(data);
-        }
-
-        var dbUpdaterFromScvFiles = ServiceProvider.GetRequiredService<DbUpdaterFromScvFiles>();
-        string result = dbUpdaterFromScvFiles.UpdateAll();
-        Console.WriteLine(result);
         while (true)
         {
             DrawMainMenu();
@@ -86,7 +70,8 @@ public class InputHandler
 
             case 0: //GPPARAM
             {
-                //DisplayRecommendations(Analyzer, "");
+                var service = ServiceProvider.GetRequiredService<GpParametersAnalyzer>();
+                DisplayRecommendations(service, "Анализатор параметров групповых политик");
                 break;
             }
 
@@ -133,7 +118,7 @@ public class InputHandler
 
                 case 0: // SOFTWAREUPD
                 {
-                   // DisplayRecommendations(Analyzer, "");
+                    // DisplayRecommendations(Analyzer, "");
                     break;
                 }
 
@@ -154,8 +139,20 @@ public class InputHandler
     private void DisplayRecommendations(IAnalyzer<List<string>> analyzer, string analayzerName)
     {
         Console.Clear();
+        var result = analyzer.Analyze();
+        if (!result.IsSuccessful)
+        {
+            Console.WriteLine(result.ErrorMessage);
+            return;
+        }
+
         Console.WriteLine($"{analayzerName} вывел следующие рекоммендации:");
-        Console.Write(analyzer.Analyze());
+
+        foreach (string data in result.Data)
+        {
+            Console.WriteLine(data);
+        }
+
         Console.WriteLine("\n_____________________________________");
         Console.WriteLine("Нажмите любую клавишу для продолжения");
         Thread.Sleep(3000);
