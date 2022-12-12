@@ -162,7 +162,7 @@ public class GpParametersAnalyzer : IAnalyzer<List<string>>
             recommendation += $@"Описание параметра: {parameterRationale.Description}" + "\n"
                    + $@"Обоснование параметра: {parameterRationale.Rationale}" + "\n"
                    + $@"Влияние параметра на систему: {parameterRationale.Impact}" + "\n"
-                   + $@"_____________________________________________________________________________________" + "\n\n";
+                   + $@"_____________________________________________________________________________________" + "\n";
 
             recommendations.Add(recommendation);
         }
