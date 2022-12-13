@@ -1,13 +1,13 @@
 ﻿namespace Cli;
 
-public class Drawer
+public static class Drawer
 {
     private static int index = 0;
 
     public static int DrawMenu(List<string> items)
     {
         Console.CursorVisible = false;
-        for (int i = 0; i < items.Count; i++)
+        for (var i = 0; i < items.Count; i++)
         {
             if (i == index)
             {

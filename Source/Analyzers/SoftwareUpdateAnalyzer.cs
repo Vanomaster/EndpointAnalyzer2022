@@ -6,13 +6,14 @@ using Queries.NonDatabase;
 namespace Analyzers;
 
 /// <summary>
-/// Software analyzer.
+/// Software update analyzer.
 /// </summary>
 public class SoftwareUpdateAnalyzer : IAnalyzer<List<string>>
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="SoftwareUpdateAnalyzer"/> class.
     /// </summary>
+    /// <param name="upgradableSoftware">Upgradable software query.</param>
     public SoftwareUpdateAnalyzer(UpgradableSoftwareQuery upgradableSoftware)
     {
         UpgradableSoftwareQuery = upgradableSoftware;
@@ -29,24 +30,23 @@ public class SoftwareUpdateAnalyzer : IAnalyzer<List<string>>
             return new AnalyzeResult<List<string>>(upgradableSoftwareQueryResult.ErrorMessage);
         }
 
-        var updateRecommendations = GetRecommendations(upgradableSoftwareQueryResult.Data);
+        var recommendations = GetRecommendations(upgradableSoftwareQueryResult.Data);
 
-        return new AnalyzeResult<List<string>>(updateRecommendations);
+        return new AnalyzeResult<List<string>>(recommendations);
     }
 
     private static List<string> GetRecommendations(List<string> upgradableSoftware)
     {
         var recommendations = new List<string>();
+        if (!upgradableSoftware.Any())
+        {
+            recommendations.Add(@"Доступные обновления не обнаружены.");
 
-        if (upgradableSoftware.Count != 0)
-        {
-            recommendations.Add("Были обнаружены обновления следующих программ:\n");
-            recommendations.AddRange(upgradableSoftware);
+            return recommendations;
         }
-        else
-        {
-            recommendations.Add(@"Все версии программ актуальны");
-        }
+
+        recommendations.Add(@"Были обнаружены обновления для следующих программ:" + "\n");
+        recommendations.AddRange(upgradableSoftware);
 
         return recommendations;
     }

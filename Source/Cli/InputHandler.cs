@@ -1,5 +1,6 @@
 using Analyzers;
 using Analyzers.Base;
+using Core;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Cli;
@@ -9,21 +10,20 @@ namespace Cli;
 /// </summary>
 public class InputHandler
 {
-    private static readonly List<string> MenuItems = new()
+    private static readonly List<string> MenuItems = new ()
     {
-        "Запустить анализ параметров групповых политик",
-        "Запустить анализ подключённых устройств",
-        "Запустить анализ программного обеспечения",
-        "Выйти",
+        @"Запустить анализ параметров групповых политик",
+        @"Запустить анализ подключённых устройств",
+        @"Запустить анализ программного обеспечения",
+        @"Выйти",
     };
 
-    private static readonly List<string> SoftwareMenuItems = new()
+    private static readonly List<string> SoftwareMenuItems = new ()
     {
-        "Запустить анализ обновлений программного обеспечения",
-        "Запустить анализ довереного программного обеспечения",
-        "Назад",
+        @"Запустить анализ обновлений программного обеспечения",
+        @"Запустить анализ довереного программного обеспечения",
+        @"Назад",
     };
-
 
     /// <summary>
     /// Initializes a new instance of the <see cref="InputHandler"/> class.
@@ -36,14 +36,11 @@ public class InputHandler
 
     private IServiceProvider ServiceProvider { get; }
 
-    private Drawer Drawer { get; set; }
-
     /// <summary>
     /// Handle input.
     /// </summary>
     public void Handle()
     {
-        Console.Title = "Endpoint analyzer 2022";
         while (true)
         {
             DrawMainMenu();
@@ -53,7 +50,7 @@ public class InputHandler
     private void DrawMainMenu()
     {
         Console.Clear();
-        var selectedMenuItem = Drawer.DrawMenu(MenuItems);
+        int selectedMenuItem = Drawer.DrawMenu(MenuItems);
         switch (selectedMenuItem)
         {
             case -2:
@@ -64,26 +61,26 @@ public class InputHandler
 
             case -1:
             {
-                DisplayInputError();
+                DisplayInvalidInputErrorMessage();
                 break;
             }
 
             case 0:
             {
                 var service = ServiceProvider.GetRequiredService<GpParametersAnalyzer>();
-                DisplayRecommendations(service, "анализатора параметров групповых политик");
+                DisplayRecommendations(service, @"анализатора параметров групповых политик");
                 break;
             }
 
             case 1:
             {
-                //DisplayRecommendations(Analyzer, "");
+                var service = ServiceProvider.GetRequiredService<HardwareAnalyzer>();
+                //DisplayRecommendations(service, @"анализатора подключённых устройств");
                 break;
             }
 
             case 2:
             {
-                Console.Clear();
                 DrawSoftwareMenu();
                 break;
             }
@@ -112,21 +109,21 @@ public class InputHandler
 
                 case -1:
                 {
-                    DisplayInputError();
+                    DisplayInvalidInputErrorMessage();
                     break;
                 }
 
                 case 0:
                 {
                     var service = ServiceProvider.GetRequiredService<SoftwareUpdateAnalyzer>();
-                    DisplayRecommendations(service, "анализатора обновлений ПО");
+                    DisplayRecommendations(service, @"анализатора обновлений программного обеспечения");
                     break;
                 }
 
                 case 1:
                 {
                     var service = ServiceProvider.GetRequiredService<SoftwareTrustAnalyzer>();
-                    DisplayRecommendations(service, "анализатора доверенных ПО");
+                    DisplayRecommendations(service, @"анализатора доверенного программного обеспечения");
                     break;
                 }
 
@@ -138,36 +135,75 @@ public class InputHandler
         }
     }
 
-    private void DisplayRecommendations(IAnalyzer<List<string>> analyzer, string analayzerName)
+    private void DisplayRecommendations(IAnalyzer<List<string>> analyzer, string analyzerName)
     {
         Console.Clear();
-        var result = analyzer.Analyze();
-        if (!result.IsSuccessful)
+        Console.WriteLine(@"Выполнение анализа...");
+        var analyzeResult = analyzer.Analyze();
+        Console.Clear();
+        if (!analyzeResult.IsSuccessful)
         {
-            Console.WriteLine(result.ErrorMessage);
+            string errorMessage = GetErrorMessage(analyzeResult.ErrorMessage);
+            Console.WriteLine(@$"В результате работы {analyzerName} произошла ошибка:" + "\n\n" + errorMessage);
+            string errorMessageLogResult = LogAnalyzeResult(analyzerName, new List<string> { errorMessage });
+            Console.WriteLine("\n" + errorMessageLogResult);
+            DisplayContinueMessage();
+
             return;
         }
 
-        Console.WriteLine($"В результате работы {analayzerName} был получен следующий результат:\n");
-
-        foreach (var data in result.Data)
+        Console.WriteLine(@$"В результате работы {analyzerName} был получен следующий результат:" + "\n");
+        foreach (string line in analyzeResult.Data)
         {
-            Console.WriteLine(data);
+            Console.WriteLine(line);
         }
 
-        Console.WriteLine("\n_____________________________________");
-        Console.WriteLine("Нажмите любую клавишу для продолжения");
+        string dataLogResult = LogAnalyzeResult(analyzerName, analyzeResult.Data);
+        Console.WriteLine("\n\n" + dataLogResult);
+        DisplayContinueMessage();
+    }
+
+    private static void DisplayContinueMessage()
+    {
+        Console.WriteLine("\n\n_____________________________________");
+        Console.WriteLine(@"Нажмите любую клавишу для продолжения");
         Console.SetCursorPosition(0, 0);
-        Thread.Sleep(3000);
+        Thread.Sleep(1000);
         Console.ReadKey();
         Console.Clear();
     }
 
-    private void DisplayInputError()
+    private static void DisplayInvalidInputErrorMessage()
     {
         Console.Clear();
-        Console.WriteLine("Выберите один вариант с помощью клавиш вверх/вниз и нажмите клавишу ввод для подтверждения");
-        Thread.Sleep(3000);
-        Console.Clear();
+        Console.WriteLine(@"Нажата неподдерживаемая для работы с меню клавиша." + "\n"
+            + @"Выберите один вариант с помощью клавиш вверх/вниз и нажмите клавишу ввод для подтверждения.");
+
+        DisplayContinueMessage();
+    }
+
+    private static string GetErrorMessage(string analyzeResultErrorMessage)
+    {
+        const string errorMessagePreStartString = ": ";
+        const string errorMessageEndString = "  at";
+        int errorMessagePreStartStringLength = errorMessagePreStartString.Length;
+        int errorMessagePreStartIndex = analyzeResultErrorMessage
+            .IndexOf(errorMessagePreStartString, StringComparison.Ordinal);
+
+        int errorMessageEndIndex = analyzeResultErrorMessage.IndexOf(errorMessageEndString, StringComparison.Ordinal);
+        string errorMessage = analyzeResultErrorMessage.Substring(
+            errorMessagePreStartIndex + errorMessagePreStartStringLength,
+            errorMessageEndIndex - errorMessagePreStartIndex);
+
+        return errorMessage;
+    }
+
+    private string LogAnalyzeResult(string analyzerName, List<string> analyzeResult)
+    {
+        var logPath = @$"Журнал {analyzerName}.txt";
+        var logger = ServiceProvider.GetRequiredService<AnalyzeResultLogger>();
+        string logResult = logger.Log(analyzeResult, logPath);
+
+        return logResult;
     }
 }

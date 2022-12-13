@@ -7,7 +7,7 @@ namespace Queries.NonDatabase;
 /// <inheritdoc />
 public class InstalledSoftwareQuery : NonDbQueryBase<List<SimpleSoftware>>
 {
-    private const string RegistryKey1 = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall";
+    private const string SoftwareRegistryKey = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall";
 
     /// <inheritdoc/>
     protected override QueryResult<List<SimpleSoftware>> ExecuteCore()
@@ -22,39 +22,38 @@ public class InstalledSoftwareQuery : NonDbQueryBase<List<SimpleSoftware>>
     private static IEnumerable<SimpleSoftware> GetInstalledProgramsFromRegistry(RegistryView registryView)
     {
         var result = new List<SimpleSoftware>();
-
-        using var key = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, registryView).OpenSubKey(RegistryKey1);
-        foreach (var subkeyName in key.GetSubKeyNames())
+        using var key = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, registryView).OpenSubKey(SoftwareRegistryKey);
+        foreach (string subkeyName in key.GetSubKeyNames())
         {
             using var subkey = key.OpenSubKey(subkeyName);
-            if (!IsProgramVisible(subkey!))
+            if (!IsVisibleProgram(subkey!))
             {
                 continue;
             }
 
-            var softwareInfo = new SimpleSoftware();
-            softwareInfo.Name = subkey.GetValue("DisplayName").ToString();
-
-            Version softwareVersion;
-            if (Version.TryParse(subkey.GetValue("DisplayVersion")?.ToString(), out softwareVersion))
+            var software = new SimpleSoftware
             {
-                softwareInfo.Version = softwareVersion;
+                Name = subkey.GetValue("DisplayName")?.ToString(),
+            };
+
+            if (Version.TryParse(subkey.GetValue("DisplayVersion")?.ToString(), out var softwareVersion))
+            {
+                software.Version = softwareVersion;
             }
 
-            result.Add(softwareInfo);
+            result.Add(software);
         }
-
 
         return result;
     }
 
-    private static bool IsProgramVisible(RegistryKey subkey)
+    private static bool IsVisibleProgram(RegistryKey subkey)
     {
         var name = subkey.GetValue("DisplayName")?.ToString();
         var systemComponentValue = subkey.GetValue("SystemComponent") as int?;
-        var isSystemComponent = systemComponentValue > 0;
-        var isProgramVisible = !string.IsNullOrEmpty(name) && (!isSystemComponent);
+        bool isSystemComponent = systemComponentValue > 0;
+        bool isVisibleProgram = !string.IsNullOrEmpty(name) && (!isSystemComponent);
 
-        return isProgramVisible;
+        return isVisibleProgram;
     }
 }

@@ -2,11 +2,12 @@
 using Dal.Entities;
 using Microsoft.EntityFrameworkCore;
 using Queries.Base;
+using Queries.NonDatabase;
 
 namespace Queries.Database;
 
 /// <inheritdoc />
-public class TrustedSoftwareQuery : QueryBase<List<Guid>?, List<TrustedSoftware>>
+public class TrustedSoftwareQuery : QueryBase<List<Guid>?, List<SimpleSoftware>>
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="TrustedSoftwareQuery"/> class.
@@ -18,8 +19,9 @@ public class TrustedSoftwareQuery : QueryBase<List<Guid>?, List<TrustedSoftware>
     }
 
     /// <inheritdoc/>
-    protected override QueryResult<List<TrustedSoftware>> ExecuteCore(List<Guid>? trustedSoftwareIds)
+    protected override QueryResult<List<SimpleSoftware>> ExecuteCore(List<Guid>? trustedSoftwareIds)
     {
+        List<SimpleSoftware> trustedSimpleSoftware = new ();
         var entitiesToFetch = Context.TrustedSoftware.AsNoTracking();
         if (trustedSoftwareIds is not null)
         {
@@ -27,7 +29,13 @@ public class TrustedSoftwareQuery : QueryBase<List<Guid>?, List<TrustedSoftware>
         }
 
         var trustedSoftware = entitiesToFetch.ToList();
+        foreach (var software in trustedSoftware)
+        {
+            var softwareVersion = Version.Parse(software.Version);
+            SimpleSoftware simpleSoftware = new () { Name = software.Name, Version = softwareVersion };
+            trustedSimpleSoftware.Add(simpleSoftware);
+        }
 
-        return GetSuccessfulResult(trustedSoftware);
+        return GetSuccessfulResult(trustedSimpleSoftware);
     }
 }
