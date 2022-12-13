@@ -1,12 +1,11 @@
 ﻿using Analyzers.Base;
-using Microsoft.SqlServer.Server;
 using Queries.Database;
 using Queries.NonDatabase;
 
 namespace Analyzers;
 
 /// <summary>
-/// Software analyzer.
+/// Software trust analyzer.
 /// </summary>
 public class SoftwareTrustAnalyzer : IAnalyzer<List<string>>
 {
@@ -14,7 +13,7 @@ public class SoftwareTrustAnalyzer : IAnalyzer<List<string>>
     /// Initializes a new instance of the <see cref="SoftwareTrustAnalyzer"/> class.
     /// </summary>
     /// <param name="installedSoftwareQuery">Installed software query.</param>
-    /// <param name="trustedSoftwareQuery">Trusted Software query.</param>
+    /// <param name="trustedSoftwareQuery">Trusted software query.</param>
     public SoftwareTrustAnalyzer(
         InstalledSoftwareQuery installedSoftwareQuery,
         TrustedSoftwareQuery trustedSoftwareQuery)
@@ -42,23 +41,13 @@ public class SoftwareTrustAnalyzer : IAnalyzer<List<string>>
             return new AnalyzeResult<List<string>>(trustedSoftwareQueryResult.ErrorMessage);
         }
 
-        List<SimpleSoftware> trustedSoftwareList = new ();
-
-        foreach (var trustedSoftware in trustedSoftwareQueryResult.Data)
-        {
-            var softwareVersion = Version.Parse(trustedSoftware.Version);
-            SimpleSoftware trustedSimpleSoftware = new () { Name = trustedSoftware.Name, Version = softwareVersion };
-            trustedSoftwareList.Add(trustedSimpleSoftware);
-        }
-
-        var untrustedSoftware = GetDifferences(installedSoftwareQueryResult.Data, trustedSoftwareList);
-
-        var recommendations = GetRecommendationsForUntrustedSoftwares(untrustedSoftware);
+        var untrustedSoftware = GetUntrustedSoftware(installedSoftwareQueryResult.Data, trustedSoftwareQueryResult.Data);
+        var recommendations = GetRecommendations(untrustedSoftware);
 
         return new AnalyzeResult<List<string>>(recommendations);
     }
 
-    private static List<SimpleSoftware> GetDifferences(
+    private static List<SimpleSoftware> GetUntrustedSoftware(
         List<SimpleSoftware> validatableCollection,
         List<SimpleSoftware> validCollection)
     {
@@ -83,7 +72,7 @@ public class SoftwareTrustAnalyzer : IAnalyzer<List<string>>
                 continue;
             }
 
-            var isValidVersion = validatableSoftware.Version.CompareTo(validSoftware.Version) >= 0;
+            bool isValidVersion = validatableSoftware.Version.CompareTo(validSoftware.Version) >= 0;
             if (!isValidVersion)
             {
                 invalidSoftware.Add(validatableSoftware);
@@ -93,7 +82,7 @@ public class SoftwareTrustAnalyzer : IAnalyzer<List<string>>
         return invalidSoftware;
     }
 
-    private static List<string> GetRecommendationsForUntrustedSoftwares(List<SimpleSoftware> untrustedSoftware)
+    private static List<string> GetRecommendations(List<SimpleSoftware> untrustedSoftware)
     {
         var recommendations = new List<string>();
         if (!untrustedSoftware.Any())
@@ -104,24 +93,22 @@ public class SoftwareTrustAnalyzer : IAnalyzer<List<string>>
         }
 
         recommendations.Add(@"Были обнаружены недоверенные приложения."
-                            + "\n" + @"Рекомендуется проверить эти приложения:" + "\n");
-        foreach (var software in untrustedSoftware)
-        {
-            recommendations.Add($"{CutSoftwareString(software.Name)} | {CutSoftwareString(software.Version?.ToString())}");
-        }
+                            + "\n" + @"Рекомендуется проверить следующие приложения:" + "\n");
+
+        recommendations.AddRange(untrustedSoftware
+            .Select(software =>
+                $"{GetCutSoftwareName(software.Name)} | {GetCutSoftwareName(software.Version?.ToString())}"));
 
         return recommendations;
     }
 
-    private static string CutSoftwareString(string? inputString)
+    private static string GetCutSoftwareName(string? inputString)
     {
         if (inputString != null && inputString.Length >= 55)
         {
-            return $"{inputString.Substring(0, 53) + "..",-55}";
+            return $"{inputString[..53] + "..",-55}";
         }
-        else
-        {
-            return $"{inputString,-55}";
-        }
+
+        return $"{inputString,-55}";
     }
 }

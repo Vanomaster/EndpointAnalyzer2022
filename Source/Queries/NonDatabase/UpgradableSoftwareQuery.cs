@@ -21,27 +21,50 @@ public class UpgradableSoftwareQuery : NonDbQueryBase<List<string>>
                 CreateNoWindow = true,
             },
         };
+
         process.Start();
-
-        // Parse the output of the "winget" command to get the list of updates
-        var upgradableSoftware = new List<string>();
-        using (var reader = new StreamReader(process.StandardOutput.BaseStream))
-        {
-            while (!reader.EndOfStream)
-            {
-                string inputLine = reader.ReadLine();
-                string nameLine, currentVersion, availableVersion;
-                if (inputLine.Length == 119 || inputLine.Length == 117)
-                {
-                    nameLine = inputLine.Substring(0, 39);
-                    currentVersion = inputLine.Substring(77, 17);
-                    availableVersion = inputLine.Substring(94, 17);
-
-                    upgradableSoftware.Add($"{nameLine}|{currentVersion}|{availableVersion}");
-                }
-            }
-        }
+        var upgradableSoftware = GetUpgradableSoftware(process);
 
         return GetSuccessfulResult(upgradableSoftware);
+    }
+
+    /// <summary>
+    /// Parse the output of the "winget" command to get the list of updates.
+    /// </summary>
+    /// <param name="process">winget process.</param>
+    /// <returns>Upgradable software.</returns>
+    private static List<string> GetUpgradableSoftware(Process process)
+    {
+        var upgradableSoftware = new List<string>();
+        var indexOfAvailableVersion = 0;
+        var indexOfVersion = 0;
+        var indexOfId = 0;
+        var indexOfSource = 0;
+        using var reader = new StreamReader(process.StandardOutput.BaseStream);
+        while (!reader.EndOfStream)
+        {
+            string? inputLine = reader.ReadLine();
+            if (inputLine!.Length is not(119 or 117))
+            {
+                continue;
+            }
+
+            if (inputLine.Contains("Версия"))
+            {
+                indexOfId = inputLine.IndexOf("ИД", StringComparison.Ordinal);
+                indexOfVersion = inputLine.IndexOf("Версия", StringComparison.Ordinal);
+                indexOfAvailableVersion = inputLine.IndexOf("Доступно", StringComparison.Ordinal);
+                indexOfSource = inputLine.IndexOf("Источник", StringComparison.Ordinal);
+            }
+
+            string nameLine = inputLine[.. (indexOfId - 1)];
+            string currentVersion = inputLine.Substring(indexOfVersion, indexOfAvailableVersion - indexOfVersion);
+            string availableVersion = inputLine
+                .Substring(indexOfAvailableVersion, indexOfSource - indexOfAvailableVersion);
+
+            upgradableSoftware.Add($"{nameLine}|{currentVersion}|{availableVersion}");
+        }
+
+        return upgradableSoftware;
     }
 }

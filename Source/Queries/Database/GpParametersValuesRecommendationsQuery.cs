@@ -22,7 +22,7 @@ public class GpParametersValuesRecommendationsQuery : QueryBase<List<SimpleGpPar
     protected override QueryResult<List<SimpleGpParameter>> ExecuteCore()
     {
         var entitiesToFetch = Context.GpParametersRecommendations.AsNoTracking();
-        
+
         var gpParametersValueRecommendation = entitiesToFetch
             .Select(entity => new SimpleGpParameter
             {

@@ -18,15 +18,16 @@ internal static class Program
 
     private static void Main(string[] args)
     {
+        ConfigureConsole();
         ConfigureExceptionsHandling();
         ConfigureServices();
         RunInputHandler();
     }
 
-    private static void RunInputHandler()
+    private static void ConfigureConsole()
     {
-        var inputHandler = ServiceProvider.GetRequiredService<InputHandler>();
-        inputHandler.Handle();
+        Console.Title = "Endpoint analyzer 2022";
+        Console.WriteLine(@"Запуск...");
     }
 
     private static void ConfigureExceptionsHandling()
@@ -47,15 +48,21 @@ internal static class Program
         ServiceProvider = services.BuildServiceProvider();
     }
 
+    private static void RunInputHandler()
+    {
+        var inputHandler = ServiceProvider.GetRequiredService<InputHandler>();
+        inputHandler.Handle();
+    }
+
     private static void UnhandledExceptionThrowing(object sender, UnhandledExceptionEventArgs e)
     {
-        string errorMessage = $"Произошло необработанное исключение: {e.ExceptionObject}";
+        string errorMessage = @$"Произошло необработанное исключение: {e.ExceptionObject}";
         Console.WriteLine(errorMessage);
     }
 
     private static void UnobservedTaskExceptionThrowing(object? sender, UnobservedTaskExceptionEventArgs e)
     {
-        string errorMessage = $"Произошло необработанное исключение: {e.Exception}";
+        string errorMessage = @$"Произошло необработанное исключение: {e.Exception}";
         Console.WriteLine(errorMessage);
         e.SetObserved();
     }

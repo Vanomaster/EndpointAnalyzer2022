@@ -55,7 +55,6 @@ public class GpParametersAnalyzer : IAnalyzer<List<string>>
         }
 
         var registryParameters = registryParameterValueQueryResult.Data;
-
         var registryGpParameters = registryParameters.RegistryExistentParameters
             .Select(parameter => new SimpleGpParameter
             {
@@ -66,9 +65,7 @@ public class GpParametersAnalyzer : IAnalyzer<List<string>>
         var gpParameters = parametersQueryFromSeceditResult.Data;
         gpParameters.AddRange(registryGpParameters);
         var gpParametersRecommendations = gpParametersRecommendationsQueryResult.Data;
-        var invalidParameters =
-            GetDifferences(gpParameters, gpParametersRecommendations);
-
+        var invalidParameters = GetInvalidParameters(gpParameters, gpParametersRecommendations);
         var nonexistentRegistryGpParameter = registryParameters.RegistryNonexistentParameters
             .Select(parameter => new SimpleGpParameter
             {
@@ -82,7 +79,7 @@ public class GpParametersAnalyzer : IAnalyzer<List<string>>
         return new AnalyzeResult<List<string>>(recommendations);
     }
 
-    private static List<SimpleGpParameter> GetDifferences(
+    private static List<SimpleGpParameter> GetInvalidParameters(
         List<SimpleGpParameter> validatableCollection,
         List<SimpleGpParameter> validCollection)
     {
@@ -118,6 +115,14 @@ public class GpParametersAnalyzer : IAnalyzer<List<string>>
         List<SimpleGpParameter> invalidParameters,
         List<SimpleGpParameter> nonexistentParameters)
     {
+        var recommendations = new List<string>();
+        if (!invalidParameters.Any() && !nonexistentParameters.Any())
+        {
+            recommendations.Add(@"Параметры, значения которых не соответствуют рекомендуемым значениям, не обнаружены.");
+
+            return recommendations;
+        }
+
         invalidParameters.AddRange(nonexistentParameters);
         var invalidParametersNames = invalidParameters
             .Select(parameter => parameter.RegistryParameterName)
@@ -134,14 +139,16 @@ public class GpParametersAnalyzer : IAnalyzer<List<string>>
         var nonexistentParametersNames = nonexistentParameters
             .Select(nonexistentPar => nonexistentPar.RegistryParameterName)
             .ToList();
-        var recommendations = new List<string>();
+
+        recommendations.Add(@"Были обнаружены параметры, значения которых не соответствуют рекомендуемым значениям."
+                            + "\n" + @"Рекомендуется исправить значения следующих параметров:" + "\n");
 
         foreach (var invalidParameter in invalidParameters)
         {
             var parameterRationale = rationalesRecommendations
                 .FirstOrDefault(rec => rec.RegistryParemeterName == invalidParameter.RegistryParameterName);
 
-            string recommendation = $@"Имя параметра: {parameterRationale?.Name}" + "\n";
+            string recommendation = @$"Имя параметра: {parameterRationale?.Name}" + "\n";
 
             if (nonexistentParametersNames.Contains(invalidParameter.RegistryParameterName))
             {
@@ -149,20 +156,20 @@ public class GpParametersAnalyzer : IAnalyzer<List<string>>
             }
             else
             {
-                recommendation += $@"Текущее значение параметра: {invalidParameter.Value}" + "\n";
+                recommendation += @$"Текущее значение параметра: {invalidParameter.Value}" + "\n";
             }
 
             recommendation += parameterRationale.Direction switch
             {
-                null => $@"Рекомендуемое значение параметра: {parameterRationale.Value}" + "\n",
-                false => $@"Рекомендуемое значение параметра: не более {parameterRationale.Value}" + "\n",
-                true => $@"Рекомендуемое значение параметра: не менее {parameterRationale.Value}" + "\n",
+                null => @$"Рекомендуемое значение параметра: {parameterRationale.Value}" + "\n",
+                false => @$"Рекомендуемое значение параметра: не более {parameterRationale.Value}" + "\n",
+                true => @$"Рекомендуемое значение параметра: не менее {parameterRationale.Value}" + "\n",
             };
 
-            recommendation += $@"Описание параметра: {parameterRationale.Description}" + "\n"
-                   + $@"Обоснование параметра: {parameterRationale.Rationale}" + "\n"
-                   + $@"Влияние параметра на систему: {parameterRationale.Impact}" + "\n"
-                   + $@"_____________________________________________________________________________________" + "\n";
+            recommendation += @$"Описание параметра: {parameterRationale.Description}" + "\n"
+                   + @$"Обоснование параметра: {parameterRationale.Rationale}" + "\n"
+                   + @$"Влияние параметра на систему: {parameterRationale.Impact}" + "\n"
+                   + "_____________________________________________________________________________________" + "\n";
 
             recommendations.Add(recommendation);
         }
