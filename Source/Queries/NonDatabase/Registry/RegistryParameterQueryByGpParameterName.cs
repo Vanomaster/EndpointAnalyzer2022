@@ -65,7 +65,8 @@ public class RegistryParameterQueryByGpParameterName : NonDbQueryBase<List<strin
         return GetSuccessfulResult(separatedByExistenceRegistryParameters);
     }
 
-    private static RegistryParameters GetSeparatedByExistenceRegistryParameters(List<RegistryParameter> registryParameters)
+    private static RegistryParameters GetSeparatedByExistenceRegistryParameters(
+        List<RegistryParameter> registryParameters)
     {
         var registryNonexistentParameters = new List<RegistryParameter>();
         var registryExistentParameters = new List<RegistryParameter>();

@@ -1,4 +1,5 @@
 ﻿using Analyzers.Base;
+using Dal.Entities;
 using Queries.Database;
 using Queries.NonDatabase;
 
@@ -7,32 +8,37 @@ namespace Analyzers;
 /// <summary>
 /// Hardware analyzer.
 /// </summary>
-public class HardwareAnalyzer : IAnalyzer<List<RegistryParameterQueryModel>, List<string>>
+public class HardwareAnalyzer : IAnalyzer<List<string>>
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="HardwareAnalyzer"/> class.
     /// </summary>
-    /// <param name="registryExistentParameterQuery">Registry parameter value query.</param>
+    /// <param name="hardwareHistoryQuery">Hardware history query.</param>
     /// <param name="trustedHardwareQuery">Trusted hardware query.</param>
+    /// <param name="hardwareQuery">Hardware query.</param>
     public HardwareAnalyzer(
-        RegistryExistentParameterQuery registryExistentParameterQuery,
-        TrustedHardwareQuery trustedHardwareQuery)
+        HardwareHistoryQuery hardwareHistoryQuery,
+        TrustedHardwareQuery trustedHardwareQuery,
+        HardwareQuery hardwareQuery)
     {
-        RegistryExistentParameterQuery = registryExistentParameterQuery;
+        HardwareHistoryQuery = hardwareHistoryQuery;
         TrustedHardwareQuery = trustedHardwareQuery;
+        HardwareQuery = hardwareQuery;
     }
 
-    private RegistryExistentParameterQuery RegistryExistentParameterQuery { get; }
+    private HardwareHistoryQuery HardwareHistoryQuery { get; }
 
     private TrustedHardwareQuery TrustedHardwareQuery { get; }
 
+    private HardwareQuery HardwareQuery { get; }
+
     /// <inheritdoc/>
-    public AnalyzeResult<List<string>> Analyze(List<RegistryParameterQueryModel> model)
+    public AnalyzeResult<List<string>> Analyze()
     {
-        var registryParameterValueQueryResult = RegistryExistentParameterQuery.Execute(model);
-        if (!registryParameterValueQueryResult.IsSuccessful)
+        var hardwareHistoryQueryResult = HardwareHistoryQuery.Execute();
+        if (!hardwareHistoryQueryResult.IsSuccessful)
         {
-            return new AnalyzeResult<List<string>>(registryParameterValueQueryResult.ErrorMessage);
+            return new AnalyzeResult<List<string>>(hardwareHistoryQueryResult.ErrorMessage);
         }
 
         var trustedHardwareQueryResult = TrustedHardwareQuery.Execute();
@@ -41,44 +47,71 @@ public class HardwareAnalyzer : IAnalyzer<List<RegistryParameterQueryModel>, Lis
             return new AnalyzeResult<List<string>>(trustedHardwareQueryResult.ErrorMessage);
         }
 
-        var hardwareIds = registryParameterValueQueryResult.Data
-            .Select(parameter => parameter.Value);
-        var trustedHardwareIds = trustedHardwareQueryResult.Data
-            .Select(hardware => hardware.HardwareId)
-            .ToList();
+        var untrustedHardware = GetUntrustedHardware(hardwareHistoryQueryResult.Data, trustedHardwareQueryResult.Data);
+        var untrustedHardwareIds = untrustedHardware.Select(hardware => hardware.Id).ToList();
+        var hardwareQueryResult = HardwareQuery.Execute(untrustedHardwareIds);
+        if (!hardwareQueryResult.IsSuccessful)
+        {
+            return new AnalyzeResult<List<string>>(hardwareQueryResult.ErrorMessage);
+        }
 
-        var untrustedHardwareIds = GetDifferences(hardwareIds, trustedHardwareIds);
-
-        var recommendations = GetRecommendations(untrustedHardwareIds);
+        var recommendations = GetRecommendations(untrustedHardware, hardwareQueryResult.Data);
 
         return new AnalyzeResult<List<string>>(recommendations);
     }
 
-    private static List<string> GetDifferences(
-        IEnumerable<string> validatableCollection,
-        ICollection<string> validCollection)
+    private static List<RegistryHardware> GetUntrustedHardware(
+        IEnumerable<RegistryHardware> validatableCollection,
+        ICollection<TrustedHardware> validCollection)
     {
-        var differences = validatableCollection
-            .Where(hardwareId => !validCollection.Contains(hardwareId))
+        var invalidCollection = validatableCollection
+            .Where(validatableElement => !validCollection
+                .Select(validElement => validElement.HardwareId)
+                .Contains(validatableElement.Id))
             .ToList();
 
-        return differences;
+        return invalidCollection;
     }
 
-    private static List<string> GetRecommendations(IReadOnlyCollection<string> differences)
+    private static List<string> GetRecommendations(
+        IReadOnlyCollection<RegistryHardware> untrustedHardwareHistory,
+        List<WmiHardware> untrustedHardware)
     {
         var recommendations = new List<string>();
-        if (!differences.Any())
+        if (!untrustedHardwareHistory.Any())
         {
             recommendations.Add(@"Недоверенные устройства не обнаружены.");
 
             return recommendations;
         }
 
-        string recommendation = @"Были обнаружены недоверенные устройства."
-                                + "\n" + @"Рекомендуется проверить эти устройства:" + "\n";
-        recommendation += string.Join("\n", differences);
-        recommendations.Add(recommendation);
+        recommendations.Add(@"Были обнаружены недоверенные устройства."
+                            + "\n" + @"Рекомендуется проверить следующие устройства:" + "\n");
+
+        recommendations.Add(@"Подключённые в данный момент недоверенные устройства:" + "\n");
+
+        recommendations.AddRange(untrustedHardware
+            .Select(hardware =>
+                @"Идентификатор: " + hardware.Id + "\n"
+                + @"Название: " + hardware.Name + "\n"
+                + @"Описание: " + hardware.Description + "\n"
+                + @"Производитель: " + hardware.Manufacturer + "\n"
+                + @"Месторасположение: "
+                + untrustedHardwareHistory.FirstOrDefault(hardwareHistory => hardwareHistory.Id == hardware.Id)?.Location
+                + "\n"));
+
+        recommendations.Add("___________________________________________________________________" + "\n");
+        recommendations.Add(@"Все обнаруженные недоверенные устройства:" + "\n");
+
+        recommendations.AddRange(untrustedHardwareHistory
+            .Select(hardware =>
+                @"Идентификатор: " + hardware.Id + "\n"
+                + @"Название: " + hardware.Name + "\n"
+                + @"Описание: " + hardware.Description + "\n"
+                + @"Производитель: "
+                + untrustedHardware.FirstOrDefault(wmiHardware => wmiHardware.Id == hardware.Id)?.Manufacturer + "\n"
+                + @"Месторасположение: " + hardware.Location + "\n"
+                + @"Дата последнего изменения данных об устройстве: " + hardware.LastHardwareDataModifiedDateTime + "\n"));
 
         return recommendations;
     }

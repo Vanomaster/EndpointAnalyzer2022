@@ -59,7 +59,7 @@ public class GpParametersAnalyzer : IAnalyzer<List<string>>
             .Select(parameter => new SimpleGpParameter
             {
                 RegistryParameterName = parameter.ParameterName,
-                Value = parameter.Value,
+                Value = parameter.Value?.ToString(),
             });
 
         var gpParameters = parametersQueryFromSeceditResult.Data;
@@ -70,7 +70,7 @@ public class GpParametersAnalyzer : IAnalyzer<List<string>>
             .Select(parameter => new SimpleGpParameter
             {
                 RegistryParameterName = parameter.ParameterName,
-                Value = parameter.Value,
+                Value = parameter.Value?.ToString(),
             })
             .ToList();
 
@@ -101,6 +101,11 @@ public class GpParametersAnalyzer : IAnalyzer<List<string>>
                 false => int.Parse(validatableParameter.Value) <= int.Parse(validParameter.Value),
                 true => int.Parse(validatableParameter.Value) >= int.Parse(validParameter.Value),
             };
+
+            if (validParameter.Direction == false && validParameter.Value == "0")
+            {
+                invalidParameters.Add(validatableParameter);
+            }
 
             if (!isValidParameter)
             {

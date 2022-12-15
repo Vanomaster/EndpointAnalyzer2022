@@ -22,16 +22,20 @@ public static class DiInitializer
         services.AddScoped<GpParametersRationalesRecommendationsQuery>();
         services.AddScoped<GpRegistryParameterQueryByGpParameterName>();
 
-        services.AddScoped<RegistryParameterQueryByGpParameterName>();
-        services.AddScoped<InstalledSoftwareQuery>();
-        services.AddScoped<UpgradableSoftwareQuery>();
         services.AddScoped<RegistryParameterQuery>();
         services.AddScoped<RegistryExistentParameterQuery>();
+        services.AddScoped<RegistryParametersQueryByKeyName>();
+        services.AddScoped<RegistryParameterQueryByGpParameterName>();
         services.AddScoped<ParametersQueryFromSecedit>();
+        services.AddScoped<InstalledSoftwareQuery>();
+        services.AddScoped<HardwareHistoryQuery>();
+        services.AddScoped<HardwareQuery>();
 
         services.AddScoped<QueryFromCsvFile<FullGpParametersScvModel>>();
         services.AddScoped<QueryFromCsvFile<TrustedSoftwareScvModel>>();
         services.AddScoped<QueryFromCsvFile<TrustedHardwareScvModel>>();
+
+        services.AddScoped<UpgradableSoftwareQuery>();
 
         return services;
     }

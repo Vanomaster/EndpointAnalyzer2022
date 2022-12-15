@@ -1,5 +1,7 @@
-﻿using Analyzers;
+﻿using System.Security.Principal;
+using Analyzers;
 using Commands;
+using Core;
 using Dal;
 using Microsoft.Extensions.DependencyInjection;
 using Queries;
@@ -18,15 +20,27 @@ internal static class Program
 
     private static void Main(string[] args)
     {
+        var principal = new WindowsPrincipal(WindowsIdentity.GetCurrent());
+        bool hasAdministrativeRight = principal.IsInRole(WindowsBuiltInRole.Administrator);
+        if (!hasAdministrativeRight)
+        {
+            Console.WriteLine(@"Программа запущена без прав администратора."
+                              + "\n" + @"Перезапустите программу с правами администратора");
+            Console.ReadLine();
+            return;
+        }
+
         ConfigureConsole();
         ConfigureExceptionsHandling();
         ConfigureServices();
+        RunDbUpdater();
+        RunWatchers();
         RunInputHandler();
     }
 
     private static void ConfigureConsole()
     {
-        Console.Title = "Endpoint analyzer 2022";
+        Console.Title = Constants.ProgramName;
         Console.WriteLine(@"Запуск...");
     }
 
@@ -46,6 +60,24 @@ internal static class Program
         services.AddCommands();
         services.AddAnalyzers();
         ServiceProvider = services.BuildServiceProvider();
+    }
+
+    private static void RunDbUpdater()
+    {
+        Console.WriteLine(@"Обновление базы данных...");
+        var dbUpdaterFromScvFiles = ServiceProvider.GetRequiredService<DbUpdaterFromScvFiles>();
+        string updateResult = dbUpdaterFromScvFiles.UpdateAll();
+        Console.WriteLine(@"База данных обновлена!");
+
+        // Console.WriteLine(updateResult);
+        // CommonDisplay.DisplayContinueMessage();
+    }
+
+    private static void RunWatchers()
+    {
+        ServiceProvider.GetRequiredService<HardwareWatcher>();
+        Console.WriteLine(@"Модуль слежения за подключаемыми устройствами запущен.");
+        Thread.Sleep(2000);
     }
 
     private static void RunInputHandler()

@@ -53,9 +53,12 @@ public class AddOrUpdateGpParameterFromCsvFileCommand : CommandBase<List<FullGpP
             gpParametersRecommendations.Add(gpParametersRecommendation);
         }
 
-        Context.UpdateRange(gpParameters);
-        Context.UpdateRange(gpParameterRegistryParameters);
-        Context.UpdateRange(gpParametersRecommendations);
+        Context.RemoveRange(Context.GpParameters);
+        Context.RemoveRange(Context.GpParameterRegistryParameters);
+        Context.RemoveRange(Context.GpParametersRecommendations);
+        Context.AddRange(gpParameters);
+        Context.AddRange(gpParameterRegistryParameters);
+        Context.AddRange(gpParametersRecommendations);
         Context.SaveChanges();
 
         return GetSuccessfulResult();

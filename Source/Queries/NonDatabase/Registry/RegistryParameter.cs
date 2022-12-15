@@ -6,5 +6,7 @@ public class RegistryParameter
 
     public string ParameterName { get; set; }
 
-    public string? Value { get; set; }
+    public object? Value { get; set; }
+
+    public DateTime? LastWriteDateTime { get; set; }
 }

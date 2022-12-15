@@ -2,7 +2,12 @@
 
 public static class Drawer
 {
-    private static int index = 0;
+    private static int index;
+
+    public static void ResetCursorPosition()
+    {
+        index = 0;
+    }
 
     public static int DrawMenu(List<string> items)
     {

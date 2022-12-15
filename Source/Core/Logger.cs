@@ -1,16 +1,16 @@
 ﻿namespace Core;
 
 /// <summary>
-/// Analyze result logger.
+/// Logger.
 /// </summary>
-public class AnalyzeResultLogger
+public class Logger
 {
     private const string LogDirectoryName = @"Журналы";
-    private static readonly string LogDirectoryPath = Directory.GetCurrentDirectory();
-    private readonly string logPath = @$"{LogDirectoryPath}\{LogDirectoryName}";
+    private readonly string logDirectoryPath
+        = @$"{Constants.UserDirectoryPath}\{Constants.ProgramName}\{LogDirectoryName}";
 
     /// <summary>
-    /// Log analyze result.
+    /// Log.
     /// </summary>
     /// <param name="data">Data to log.</param>
     /// <param name="fileName">Log file name.</param>
@@ -32,13 +32,13 @@ public class AnalyzeResultLogger
     private string WriteToFile(List<string> data, string fileName)
     {
         var result = string.Empty;
-        if (!Directory.Exists(logPath))
+        if (!Directory.Exists(logDirectoryPath))
         {
-            Directory.CreateDirectory(logPath);
-            result += @$"Cоздана директория по пути {logPath}." + "\n";
+            Directory.CreateDirectory(logDirectoryPath);
+            result += @$"Cоздана директория по пути {logDirectoryPath}." + "\n";
         }
 
-        string fullLogPath = logPath + @"\" + fileName;
+        string fullLogPath = logDirectoryPath + @"\" + fileName;
         if (File.Exists(fullLogPath))
         {
             AddDataToFileBeginning(data, fullLogPath);

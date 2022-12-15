@@ -13,7 +13,7 @@ public class InputHandler
     private static readonly List<string> MenuItems = new ()
     {
         @"Запустить анализ параметров групповых политик",
-        @"Запустить анализ подключённых устройств",
+        @"Запустить анализ подключенных устройств",
         @"Запустить анализ программного обеспечения",
         @"Выйти",
     };
@@ -75,13 +75,14 @@ public class InputHandler
             case 1:
             {
                 var service = ServiceProvider.GetRequiredService<HardwareAnalyzer>();
-                //DisplayRecommendations(service, @"анализатора подключённых устройств");
+                DisplayRecommendations(service, @"анализатора подключенных устройств");
                 break;
             }
 
             case 2:
             {
                 DrawSoftwareMenu();
+                Drawer.ResetCursorPosition();
                 break;
             }
 
@@ -95,6 +96,7 @@ public class InputHandler
 
     private void DrawSoftwareMenu()
     {
+        Drawer.ResetCursorPosition();
         while (true)
         {
             Console.Clear();
@@ -163,23 +165,31 @@ public class InputHandler
         DisplayContinueMessage();
     }
 
+    private static void DisplayInvalidInputErrorMessage()
+    {
+        Console.Clear();
+        Console.WriteLine(@"Была нажата неподдерживаемая для работы с меню клавиша." + "\n"
+            + "Выберите пункт меню с помощью клавиш \"Вверх\" и \"Вниз\" и нажмите клавишу \"Ввод\" для подтверждения выбора.");
+
+        DisplayContinueMessage();
+    }
+
     private static void DisplayContinueMessage()
     {
         Console.WriteLine("\n\n_____________________________________");
         Console.WriteLine(@"Нажмите любую клавишу для продолжения");
         Console.SetCursorPosition(0, 0);
-        Thread.Sleep(1000);
         Console.ReadKey();
         Console.Clear();
     }
 
-    private static void DisplayInvalidInputErrorMessage()
+    private string LogAnalyzeResult(string analyzerName, List<string> analyzeResult)
     {
-        Console.Clear();
-        Console.WriteLine(@"Нажата неподдерживаемая для работы с меню клавиша." + "\n"
-            + @"Выберите один вариант с помощью клавиш вверх/вниз и нажмите клавишу ввод для подтверждения.");
+        var logFileName = @$"Журнал {analyzerName}.txt";
+        var logger = ServiceProvider.GetRequiredService<Logger>();
+        string logResult = logger.Log(analyzeResult, logFileName);
 
-        DisplayContinueMessage();
+        return logResult;
     }
 
     private static string GetErrorMessage(string analyzeResultErrorMessage)
@@ -196,14 +206,5 @@ public class InputHandler
             errorMessageEndIndex - errorMessagePreStartIndex);
 
         return errorMessage;
-    }
-
-    private string LogAnalyzeResult(string analyzerName, List<string> analyzeResult)
-    {
-        var logPath = @$"Журнал {analyzerName}.txt";
-        var logger = ServiceProvider.GetRequiredService<AnalyzeResultLogger>();
-        string logResult = logger.Log(analyzeResult, logPath);
-
-        return logResult;
     }
 }

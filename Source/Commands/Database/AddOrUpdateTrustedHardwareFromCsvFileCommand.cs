@@ -25,7 +25,8 @@ public class AddOrUpdateTrustedHardwareFromCsvFileCommand : CommandBase<List<Tru
             .Select(scvModel => new TrustedHardware { HardwareId = scvModel.HardwareId })
             .ToList();
 
-        Context.UpdateRange(trustedHardware);
+        Context.RemoveRange(Context.TrustedHardware);
+        Context.AddRange(trustedHardware);
         Context.SaveChanges();
 
         return GetSuccessfulResult();

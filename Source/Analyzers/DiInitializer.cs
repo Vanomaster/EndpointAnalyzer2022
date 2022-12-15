@@ -14,6 +14,7 @@ public static class DiInitializer
     /// <returns>Changed collection of services.</returns>
     public static IServiceCollection AddAnalyzers(this IServiceCollection services)
     {
+        services.AddScoped<ConnectedHardwareAnalyzer>();
         services.AddScoped<GpParametersAnalyzer>();
         services.AddScoped<HardwareAnalyzer>();
         services.AddScoped<SoftwareTrustAnalyzer>();
