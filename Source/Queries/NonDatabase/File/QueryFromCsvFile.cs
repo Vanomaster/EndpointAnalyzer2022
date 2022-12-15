@@ -6,7 +6,7 @@ using Queries.Base;
 namespace Queries.NonDatabase;
 
 /// <summary>
-/// Query for getting group policy parameters, their registry parameters and recommendations from CSV file.
+/// Query for getting data from CSV file.
 /// </summary>
 /// <typeparam name="TResult">Type of query result.</typeparam>
 public class QueryFromCsvFile<TResult> : NonDbQueryBase<List<string>, List<TResult>>
@@ -31,7 +31,7 @@ public class QueryFromCsvFile<TResult> : NonDbQueryBase<List<string>, List<TResu
                 var record = csvReader.GetRecord<TResult>();
                 if (record is null)
                 {
-                    return GetFailedResult(@"Record is empty");
+                    return GetFailedResult(@"Record is empty.");
                 }
 
                 records.Add(record);

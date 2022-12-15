@@ -4,7 +4,7 @@ using Queries.Base;
 namespace Queries.NonDatabase;
 
 /// <summary>
-/// Windows registry parameter value query.
+/// Windows registry parameter value query for obviously valid input models.
 /// </summary>
 public class RegistryExistentParameterQuery : NonDbQueryBase<List<RegistryParameterQueryModel>, List<RegistryParameter>>
 {
@@ -14,10 +14,9 @@ public class RegistryExistentParameterQuery : NonDbQueryBase<List<RegistryParame
     private const string DefaultValue = "_______________";
 
     /// <inheritdoc/>
-    protected override QueryResult<List<RegistryParameter>> ExecuteCore(
-        List<RegistryParameterQueryModel> models)
+    protected override QueryResult<List<RegistryParameter>> ExecuteCore(List<RegistryParameterQueryModel> models)
     {
-        var values = new List<RegistryParameter>();
+        var registryParameters = new List<RegistryParameter>();
         foreach (var model in models)
         {
             var value = Registry.GetValue(model.KeyName, model.ParameterName, DefaultValue)?.ToString();
@@ -37,9 +36,9 @@ public class RegistryExistentParameterQuery : NonDbQueryBase<List<RegistryParame
                 Value = value,
             };
 
-            values.Add(parameter);
+            registryParameters.Add(parameter);
         }
 
-        return GetSuccessfulResult(values);
+        return GetSuccessfulResult(registryParameters);
     }
 }

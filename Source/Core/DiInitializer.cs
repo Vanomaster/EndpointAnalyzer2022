@@ -16,7 +16,8 @@ public static class DiInitializer
     public static IServiceCollection AddCore(this IServiceCollection services)
     {
         services.AddScoped<DbUpdaterFromScvFiles>();
-        services.AddScoped<AnalyzeResultLogger>();
+        services.AddScoped<Logger>();
+        services.AddScoped<HardwareWatcher>();
 
         return services;
     }

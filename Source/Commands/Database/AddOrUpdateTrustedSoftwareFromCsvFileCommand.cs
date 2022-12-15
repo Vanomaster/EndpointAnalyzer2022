@@ -25,7 +25,8 @@ public class AddOrUpdateTrustedSoftwareFromCsvFileCommand : CommandBase<List<Tru
             .Select(scvModel => new TrustedSoftware { Name = scvModel.Name, Version = scvModel.Version })
             .ToList();
 
-        Context.UpdateRange(trustedSoftware);
+        Context.RemoveRange(Context.TrustedSoftware);
+        Context.AddRange(trustedSoftware);
         Context.SaveChanges();
 
         return GetSuccessfulResult();

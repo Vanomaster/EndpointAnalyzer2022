@@ -29,6 +29,7 @@ public class GpParametersValuesRecommendationsQuery : QueryBase<List<SimpleGpPar
                 RegistryParameterName = entity.GpParameter.GpParameterRegistryParameters
                     .FirstOrDefault().ParameterName,
                 Value = entity.Value,
+                Direction = entity.Direction,
             })
             .ToList();
 
